@@ -20,5 +20,9 @@ namespace Game
         public void setSellOccupied(bool cellOccupied){
             this.cellOccupied = cellOccupied;
         }
+
+        public Player getPlayer(){
+            return occupiedByPlayer;
+        }
     }
 }

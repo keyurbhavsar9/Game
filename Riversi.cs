@@ -29,6 +29,8 @@ namespace Game
 
        
         public void drawGomokuBoard(){
+            
+
             for(int fl=0; fl<cols;fl++){
                 int firstChar = 65;
                 Console.Write(" "+(char)(firstChar+fl)+" ");
@@ -38,8 +40,14 @@ namespace Game
             //board logic
             for(int i = 0; i<rows;i++){
                 for(int j =0 ; j< cols;j++){
-                    Console.Write(" "+gameBoardArray[i,j]+" ");
-                    //Console.Write(" "+"Array["+i+","+j+"] ");
+                    Cell cell = base.cellArray[i,j];
+                    
+                    if(cell.isCellOccupied()){
+                        Console.Write(" "+cell.getPlayer().getPlayerSymbol()+" ");    // print player char
+                    }else{
+                        Console.Write(" "+gameBoardArray[i,j]+" "); // print -
+                    }
+
                     if( j == cols-1){
                         Console.Write(" "+(i+1));
                     }

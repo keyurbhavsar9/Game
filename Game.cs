@@ -129,22 +129,15 @@ namespace Game
             
             player1 = new Player(player1Name,p1character,0);
             player2 = new Player(player2Name,p2character,0);
-            riversi = new Riversi(5,5,player1,player2); // rows,cols
-            riversi.drawGomokuBoard();
+            riversi = new Riversi(10,10,player1,player2); // rows,cols
+
+            
 
             controlFlag = true;
             while(controlFlag){
-                print(player1Name+"'s move");
-                print("select column, as example A");
-                char playerColumn=Convert.ToChar(Console.ReadLine());
-                print("select row, as example 1");
-                int playerRow=Convert.ToInt16(Console.ReadLine())-1; // -1 adjust made for identifying current index
-                bool result=riversi.makeMove(playerRow,playerColumn,player1);
-                if(result == false){
-                   printError("Place is already occupied try a different one");          
-                }else{
-                    controlFlag = false;
-                }
+                PlayerMove(player1);
+                
+                PlayerMove(player2);
             }
             
         }
@@ -164,6 +157,28 @@ namespace Game
             Console.WriteLine(message);
             Console.ResetColor();
         }
+
+        public static void PlayerMove(Player player){
+            bool controlFlag = true;
+            
+            while(controlFlag){
+                print(player.getName()+"'s move");
+                print("select column, as example A");
+                char playerColumn=Convert.ToChar(Console.ReadLine());
+                print("select row, as example 1");
+                int playerRow=Convert.ToInt16(Console.ReadLine())-1; // -1 adjustment made for identifying current index
+                String result=riversi.makeMove(playerRow,playerColumn,player);
+                if(result != ""){
+                   printError(result);          
+                }else{
+                    controlFlag = false;
+                }
+            }
+            riversi.drawGomokuBoard();
+            
+        }
+
+    
     }
 
     

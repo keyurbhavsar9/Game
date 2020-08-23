@@ -3,10 +3,12 @@ namespace Game
 {
     class GameBoard
     {
-        private Cell[,] cellArray;
+        public Cell[,] cellArray;
         private Player player1, player2;
         private int rows,cols;
+        private int score = -1;
 
+        private int winningScore = 5;
         public GameBoard(int cols,int rows,Player player1,Player player2){
             this.rows=rows;
             this.cols= cols;
@@ -29,31 +31,178 @@ namespace Game
             return cellArray;
         }
 
-        public bool makeMove(int row,char col, Player player){
-            int index= Convert.ToInt32(col)-65; //-65 to convert character to index
-            Console.WriteLine("Selected row ="+ row);
-            Console.WriteLine("Selected col ="+ index);
-            //cellArray[row,index].setSellOccupied(true);
-            //Console.WriteLine("Select char is"+index);
-            // Cell selectedCell=cellArray[row,index]; 
-            // if(selectedCell == null){
-            //     Console.WriteLine("Null Cell");
-            // }
-            // if(selectedCell.isCellOccupied()){
-            //     return false;
-            // }
-            // Cell cell= new Cell(true, player);
-            // selectedCell = cell;
-            // return true;
-            for(int i=0;i<rows;i++){
-                for(int j=0;j<cols;j++){
-                    Cell cell=cellArray[i,j];
-                    Console.Write(" "+cell.isCellOccupied()+" ");
+        public String makeMove(int row,char col, Player player){
+                String Error="";
+                try{
+                    int index= Convert.ToInt32(col)-65; //-65 to convert character to index
+                Cell ArrayCell = cellArray[row,index];
+
+                if(row > this.rows){
+                    Error = "Invalid row selection "+(row+1);
+                }else if(index > this.cols){
+                    Error = "Invalid column selection"+col;
+                }else if(ArrayCell.isCellOccupied()){
+                    Error = "Cell already occupied by"+ArrayCell.getPlayer().getName();
                 }
-                Console.WriteLine();
-            }
-            //Console.WriteLine("Array size"+cellArray[0,0].);
-            return true;
+                else{
+                    Cell ModifiedCell= new Cell(true, player);
+                    cellArray[row,index]= ModifiedCell;
+                    int winScore=scoreCalculation(row,index,player);
+                    if(winScore == 5){
+
+                    }
+                }
+
+                // for(int i = 0 ; i < rows; i++){
+                //     for(int j = 0 ; j < rows; j++){
+                //         Console.Write(cellArray[i,j].getPlayer().getPlayerSymbol());
+                //     }    
+                //     Console.WriteLine("");
+                // }
+                }catch(Exception e){
+                    Error = "Invalid Move";
+                }
+                
+
+            return Error;
         }
+
+        public int scoreCalculation(int row,int col,Player player){
+            int rowMaxlimit=this.rows-1;
+            int colMaxlimit=this.cols-1;
+            
+            //---------------------------------------------------Console.WriteLine("Upside column");
+            score =0;
+            for(int i = row;i>(row-5);i--){
+                if(i>=0){                
+                    Cell cell = cellArray[i,col];
+                    if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                        score++;  
+                        if(score == 5)
+                            return score;
+                    }else{
+                        break;
+                    }
+                }
+            }
+
+            //---------------------------------------------------Console.WriteLine("down side column");
+            score =0;
+            for(int i = row;i<(row+5);i++){
+                if(i<=rowMaxlimit){
+                    Cell cell = cellArray[i,col];
+                    if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                        score++;  
+                        if(score == 5)
+                            return score;
+                    }else{
+                        break;
+                    }
+                }
+            }
+
+            //---------------------------------------------------Console.WriteLine("Right side row cell");
+            score =0;
+            for(int i = col;i<(col+5);i++){
+                if(i<=colMaxlimit){
+                    Cell cell = cellArray[row,i];
+                    if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                        score++;  
+                        if(score == 5)
+                            return score;
+                    }else{
+                        break;
+                    }
+                }                      
+            }
+
+            //---------------------------------------------------Console.WriteLine("Left side row cell");
+            score =0;
+            for(int i = col;i>(col-5);i--){
+                if(i>=0){
+                    Cell cell = cellArray[row,i];
+                    if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                        score++;  
+                        if(score == 5)
+                            return score;
+                    }else{
+                        break;
+                    }
+                }
+            }
+
+            //---------------------------------------------------Console.WriteLine("Diagonal right up  cells");
+            score =0;
+            for(int i=row,j=col;i>(row-5) && j<(col+5);i-- , j++){
+                    if(i>0 && j<= colMaxlimit ){
+                        Cell cell = cellArray[i,j];
+                        if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                            score++;  
+                            if(score == 5)
+                                return score;
+                        }else{
+                            break;
+                        }  
+                    }
+            }
+
+            //---------------------------------------------------Console.WriteLine("Diagonal right down  cells");
+            score =0;
+            for(int i=row,j=col;i<(row+5) && j<(col+5);i++ , j++){
+                    if(i<=rowMaxlimit && j<= colMaxlimit ){
+                        Cell cell = cellArray[i,j];
+                        if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                    
+                            score++;  
+                            if(score == 5)
+                                return score;
+                        }else{
+                            break;
+                        } 
+                    }
+            }
+
+            //---------------------------------------------------Console.WriteLine("Diagonal left up  cells");
+            score =0;
+            for(int i=row,j=col;i>(row-5) && j>(col-5);i-- , j--){
+                    if(i>=0 && j>=0 ){
+                        Cell cell = cellArray[i,j];
+                        if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                            score++;  
+                            if(score == 5)
+                                return score;
+                        }else{
+                            break;
+                        }
+                    }
+            }
+
+            //---------------------------------------------------Console.WriteLine("Diagonal left down  cells");
+            score =0;
+            for(int i=row,j=col;i<(row+5) && j>(col-5);i++ , j--){
+                    if(i<=rowMaxlimit && j>= 0 ){
+                        Cell cell = cellArray[i,j];
+                        if(cell.isCellOccupied() == true && cell.getPlayer()==player ){                        
+                            score++;  
+                            if(score == 5)
+                                return score;
+                        }else{
+                            break;
+                        }  
+                    }
+            }
+            return 0;
+
+        }
+
+
+        public int getPlayerScore(Player player){
+            int score = 0;
+            if(player.getName().Equals(this.player1.getName()))
+                score = this.player1.getScore();
+            else
+                score = this.player2.getScore();
+            return score;
+        }
+
     }
 }

@@ -9,6 +9,8 @@ namespace Game
         
         public Player(String name,char playerSymbol,int score){
             this.name=name;
+            this.playerSymbol= playerSymbol;
+            this.score= score;
         }
 
         public void setName(String name){
