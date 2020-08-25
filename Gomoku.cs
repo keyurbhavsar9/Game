@@ -2,13 +2,13 @@ using System;
 
 namespace Game
 {
-    class Riversi : GameBoard
+    class Gomoku : GameBoard
     {
         int rows;
         int cols;
         char[,] gameBoardArray;
         
-        public Riversi(int rows,int cols, Player player1, Player player2):base(rows,cols,player1,player2){
+        public Gomoku(int rows,int cols, Player player1, Player player2):base(rows,cols,player1,player2){
             this.cols = cols;
             this.rows = rows;
             this.gameBoardArray=new char[rows,cols]; //rows, cols
