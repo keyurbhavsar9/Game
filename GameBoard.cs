@@ -1,8 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Threading.Tasks;
 namespace Game
 {
+    [Serializable]
     class GameBoard
     {
         public Cell[,] cellArray;
@@ -11,8 +17,6 @@ namespace Game
         private int rows, cols;
         private int score = -1;
         private const int winningScore = 5; // change to modify winning score
-
-        private bool firstMove = true;
         // change according to winningscore
         public GameBoard(int cols, int rows, Player player1, Player player2)
         {
@@ -69,7 +73,7 @@ namespace Game
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
                 Error = "Invalid Move";
             }
@@ -311,7 +315,7 @@ namespace Game
                 {
                     secondLastCell = compMoves[compMoves.Count - 2];
                 }
-                catch (Exception e)
+                catch
                 {
                     secondLastCell = compMoves[compMoves.Count - 1];
                 }
@@ -324,21 +328,26 @@ namespace Game
                 try
                 {
                     int[] predictNextHumanMove = bestCoordinates(lastHumanCell.getRow(), lastHumanCell.getCol(), player1);
-                    int[] predictedMove = bestCoordinates(lastMoveRow, lastMoveCol, player2);
+                    int[] predictedMovePriority1 = bestCoordinates(lastMoveRow, lastMoveCol, player2);
+                    int[] predictedMovePriority2 = bestCoordinates(secondLastCell.getRow(), secondLastCell.getCol(), player2);
                     //Console.WriteLine("HUMAN SCORE" + predictNextHumanMove[0]);
                     //Console.WriteLine("COMPUTER SCORE" + predictedMove[0]);
-                    if (predictNextHumanMove[0] > predictedMove[0])
+                    if (predictNextHumanMove[0] > predictedMovePriority1[0])
                     {
                         result = makeMove(predictNextHumanMove[1], predictNextHumanMove[2], player2);
                     }
                     else
                     {
-                        result = makeMove(predictedMove[1], predictedMove[2], player2);
+                        result = makeMove(predictedMovePriority1[1], predictedMovePriority1[2], player2);
+                        if (result != "")
+                        {
+                            result = makeMove(predictedMovePriority2[1], predictedMovePriority2[2], player2);
+                        }
                     }
 
                     //Console.WriteLine("NEXT PREDICTED MOVE WILL BE" + predictedMove[1] + "," + predictedMove[2]);
                 }
-                catch (Exception e)
+                catch
                 {
                     int[] predictedMove = bestCoordinates(secondLastCell.getRow(), secondLastCell.getCol(), player2);
                     result = makeMove(predictedMove[1], predictedMove[2], player2);
@@ -576,5 +585,36 @@ namespace Game
             }
             return coords;
         }
+
+        public void saveData()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream(@".\data\sample.txt", FileMode.Create, FileAccess.Write);
+            formatter.Serialize(stream, cellArray);
+            stream.Close();
+
+        }
+
+        public void loadData()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream(@".\data\sample.txt", FileMode.Open, FileAccess.Read);
+            try
+            {
+                Cell[,] cells = (Cell[,])formatter.Deserialize(stream);
+                stream.Close();
+                this.cellArray = cells;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Can not retrive data" + e);
+            }
+
+
+            //Tutorial objnew = (Tutorial)formatter.Deserialize(stream);
+            //Console.WriteLine(objnew.ID);
+            //Console.WriteLine(objnew.Name);
+        }
+
     }
 }

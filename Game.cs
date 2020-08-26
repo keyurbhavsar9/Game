@@ -106,12 +106,12 @@ namespace Game
 
 
             gomoku = new Gomoku(10, 10, player1, player2); // rows,cols
-
+            //gomoku.loadData();
             Console.Clear();
             printInfo("GAME STARTS NOW");
             printInfo("Initial state of board");
+            gomoku.loadData();
             //gomoku.drawGomokuBoard();
-
             //============================Two player game module
             bool controlFlag1 = true;
             bool controlFlag2 = true;
@@ -126,17 +126,6 @@ namespace Game
                 if (!controlFlag2)
                     break;
             }
-
-            // //============================ONE player game module testing purpose
-            // bool controlFlag1 = true;
-            // while(controlFlag1){
-            //     gomoku.drawGomokuBoard();
-            //     controlFlag1 = PlayerMove(player1);
-            //     if(!controlFlag1)
-            //         break;
-            //     //gomoku.drawGomokuBoard();
-            // }   
-
         }
 
         public static void print(String message)
@@ -173,13 +162,34 @@ namespace Game
                 gotoLabel:
                     try
                     {
-                        print(player.getName() + "'s move");
-                        print("select column, as example A");
-                        char playerColumn = Convert.ToChar(Console.ReadLine());
-                        print("select row, as example 1");
-                        int playerRow = Convert.ToInt16(Console.ReadLine()) - 1; // -1 adjustment made for identifying current index
-                        int index = Convert.ToInt32(playerColumn) - 65;
-                        result = gomoku.makeMove(playerRow, index, player);
+                        printInfo("please select command");
+                        print("1 to make move");
+                        print("2 to save game");
+
+                        int command = Convert.ToInt16(Console.ReadLine());
+                        switch (command)
+                        {
+                            case 1:
+                                printInfo("Hint: click on space(-) where you want to make move it makes easier to identify ROW and COLUMN");
+                                print(player.getName() + "'s move");
+                                print("select column, as example A");
+                                char playerColumn = Convert.ToChar(Console.ReadLine());
+                                print("select row, as example 1");
+                                int playerRow = Convert.ToInt16(Console.ReadLine()) - 1; // -1 adjustment made for identifying current index
+                                int index = Convert.ToInt32(playerColumn) - 65;
+                                result = gomoku.makeMove(playerRow, index, player);
+                                break;
+                            case 2:
+                                gomoku.saveData();
+                                result = "NA";
+                                printInfo("GAME DATA SAVED");
+                                break;
+                            default:
+                                result = "invalid move";
+                                printError("Invalid choice");
+                                break;
+                        }
+
 
                     }
                     catch (Exception e)

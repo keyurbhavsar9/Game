@@ -1,6 +1,7 @@
 using System;
 namespace Game
 {
+    [Serializable]
     class Cell
     {
         bool cellOccupied = false;
