@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 namespace Game
 {
     class GameBoard
@@ -64,6 +65,7 @@ namespace Game
                     if (winScore == winningScore)
                     {
                         Error = "WIN";
+                        //Console.WriteLine("WINNER" + player.getName());
                     }
                 }
             }
@@ -92,7 +94,6 @@ namespace Game
                     if (cell.isCellOccupied() == true && cell.getPlayer() == player)
                     {
                         score++;
-
                         if (score == winningScore)
                         {
                             return score;
@@ -266,7 +267,7 @@ namespace Game
             }
             beta = score;
             meanScore = (alpha + beta) - 1;
-            Console.WriteLine("mean Score=" + meanScore);
+            //Console.WriteLine("mean Score=" + meanScore);
             if (meanScore == winningScore)
             {
                 return meanScore;
@@ -274,56 +275,108 @@ namespace Game
             return 0;
         }
 
-        public void computerEasyMove()
+        public string computerEasyMove()
         {
             String result = "";
-            if (firstMove == true)
+            int lastMoveCol = 0, lastMoveRow = 0;
+
+            var compMoves = new List<Cell>();
+            var humanMoves = new List<Cell>();
+            foreach (var cell in cellHistory)
             {
-                int move = (rows / 2) - 1;
-                //result = makeMove(move,move,player2); // if(5,5) is already occupied
-                result = makeMove(0, 0, player2);
-                if (result != "")
-                    makeMove(move + 1, move + 1, player2); //move to 6,6
-                Console.WriteLine("result===" + result);
-                firstMove = false;
+                //Console.WriteLine("CELL DETAILS" + cell.toString());
+                if (cell.getPlayer().getPlayerSymbol() == 'C')
+                {
+                    compMoves.Add(cell);
+                }
+            }
+
+            foreach (var cell in cellHistory)
+            {
+                if (cell.getPlayer() == player1)
+                {
+                    humanMoves.Add(cell);
+                }
+            }
+
+            //Console.WriteLine("Total computer moves=" + compMoves.Count);
+
+            if (compMoves.Count > 0)
+            {
+                Console.WriteLine("NOT First move");
+                Cell lastCell = compMoves[compMoves.Count - 1];
+                Cell lastHumanCell = humanMoves[compMoves.Count - 1];
+                Cell secondLastCell;
+                try
+                {
+                    secondLastCell = compMoves[compMoves.Count - 2];
+                }
+                catch (Exception e)
+                {
+                    secondLastCell = compMoves[compMoves.Count - 1];
+                }
+
+                //Console.WriteLine("Last row=" + lastMoveRow);
+                //Console.WriteLine("Last col=" + lastMoveCol);
+                lastMoveRow = lastCell.getRow();
+                lastMoveCol = lastCell.getCol();
+
+                try
+                {
+                    int[] predictNextHumanMove = bestCoordinates(lastHumanCell.getRow(), lastHumanCell.getCol(), player1);
+                    int[] predictedMove = bestCoordinates(lastMoveRow, lastMoveCol, player2);
+                    //Console.WriteLine("HUMAN SCORE" + predictNextHumanMove[0]);
+                    //Console.WriteLine("COMPUTER SCORE" + predictedMove[0]);
+                    if (predictNextHumanMove[0] > predictedMove[0])
+                    {
+                        result = makeMove(predictNextHumanMove[1], predictNextHumanMove[2], player2);
+                    }
+                    else
+                    {
+                        result = makeMove(predictedMove[1], predictedMove[2], player2);
+                    }
+
+                    //Console.WriteLine("NEXT PREDICTED MOVE WILL BE" + predictedMove[1] + "," + predictedMove[2]);
+                }
+                catch (Exception e)
+                {
+                    int[] predictedMove = bestCoordinates(secondLastCell.getRow(), secondLastCell.getCol(), player2);
+                    result = makeMove(predictedMove[1], predictedMove[2], player2);
+                    //Console.WriteLine("NEXT PREDICTED MOVE WILL BE" + predictedMove[1] + "," + predictedMove[2]);
+                }
+
+
+
+                //int bestCordHuman = bestCoordinates(lastMoveRow, lastMoveCol, player1); // filter human moves from array and find last humn move
+                //Console.WriteLine("MAX SEQENCE FOR Human" + bestCordHuman);
+
+                //get here the last loopbreak for i and j and pass it to method
+
             }
             else
             {
-                Console.WriteLine("NOT First Move");
-                //lets find last move made by computer
-                var compMoves = new List<Cell>();
-                foreach (var cell in cellHistory)
+                Console.WriteLine("First move");
+                //result = makeMove((rows / 2) - 1, (cols / 2) - 1, player2); // actual code 5,5
+                result = makeMove(0, 0, player2); //position 0,0
+                if (result != "")
                 {
-                    if (cell.getPlayer().getPlayerSymbol() == 'C')
-                    {
-                        compMoves.Add(cell);
-                    }
-                }
+                    result = makeMove(1, 1, player2); //position 0,0.
 
-                int lastMoveCol, lastMoveRow;
-                if (compMoves.Count > 0)
-                {
-                    Cell cell = compMoves[compMoves.Count - 1];
-                    lastMoveRow = cell.getRow();
-                    lastMoveCol = cell.getCol();
                 }
-
-                //int [] scores=bestCoordinates(); 
-                // for(int i =0 ;i<=8;i++){
-                //     Console.WriteLine("");
-                // }
             }
+            return result;
         }
 
-        public int[] bestCoordinates(int row, int col)
+        public int[] bestCoordinates(int row, int col, Player player)
         {
-            Player player = player2;
-            int[] scorePoints = new int[8];
+
+            List<int> scorePoints = new List<int>();
+            List<int> rowCordinates = new List<int>();
+            List<int> colCordinates = new List<int>();
             int rowMaxlimit = this.rows - 1;
             int colMaxlimit = this.cols - 1;
 
-            int meanScore = 0;
-            int alpha = 0, beta = 0; // alpha and beta are integers to find out the mean
+
             //---------------------------------------------------Console.WriteLine("Upside column");
             score = 0;
             for (int i = row; i > (row - winningScore); i--)
@@ -337,12 +390,16 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, col].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(col);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            alpha = score;
-            scorePoints[0] = score;
+
             //---------------------------------------------------Console.WriteLine("down side column");
             score = 0;
             for (int i = row; i < (row + winningScore); i++)
@@ -356,17 +413,18 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, col].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(col);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            beta = score;
-            meanScore = (alpha + beta) - 1;
-            //Console.WriteLine("mean Score="+meanScore);
-            scorePoints[1] = score;
 
             //---------------------------------------------------Console.WriteLine("Right side row cell");
-            meanScore = alpha = beta = score = 0;
+            score = 0;
             for (int i = col; i < (col + winningScore); i++)
             {
                 if (i <= colMaxlimit)
@@ -378,12 +436,17 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[row, i].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(row);
+                            colCordinates.Add(i);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            alpha = score;
-            scorePoints[2] = score;
+
+
             //---------------------------------------------------Console.WriteLine("Left side row cell");
             score = 0;
             for (int i = col; i > (col - winningScore); i--)
@@ -397,16 +460,18 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[row, i].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(row);
+                            colCordinates.Add(i);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            beta = score;
-            meanScore = (alpha + beta) - 1;
-            //Console.WriteLine("mean Score="+meanScore);
-            scorePoints[3] = score;
+            //scorePoints.Add(score);
             //---------------------------------------------------Console.WriteLine("Diagonal right up  cells");
-            meanScore = alpha = beta = score = 0;
+            score = 0;
             for (int i = row, j = col; i > (row - winningScore) && j < (col + winningScore); i--, j++)
             {
                 if (i >= 0 && j <= colMaxlimit)
@@ -418,12 +483,16 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, j].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(j);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            alpha = score;
-            scorePoints[4] = score;
+            //scorePoints.Add(score);
             //---------------------------------------------------Console.WriteLine("Diagonal left down  cells");
             score = 0;
             for (int i = row, j = col; i < (row + winningScore) && j > (col - winningScore); i++, j--)
@@ -437,15 +506,18 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, col].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(j);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            beta = score;
-            meanScore = (alpha + beta) - 1;
-            scorePoints[5] = score;
+            //scorePoints.Add(score);
             //---------------------------------------------------Console.WriteLine("Diagonal left up  cells");
-            alpha = beta = score = 0;
+            score = 0;
             for (int i = row, j = col; i > (row - winningScore) && j > (col - winningScore); i--, j--)
             {
                 if (i >= 0 && j >= 0)
@@ -457,12 +529,17 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, col].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(j);
+                            scorePoints.Add(score);
+                        }
+
                     }
                 }
             }
-            alpha = score;
-            scorePoints[6] = score;
+            //scorePoints.Add(score);
             //---------------------------------------------------Console.WriteLine("Diagonal right down  cells");
             score = 0;
             for (int i = row, j = col; i < (row + winningScore) && j < (col + winningScore); i++, j++)
@@ -476,15 +553,28 @@ namespace Game
                     }
                     else
                     {
-                        break;
+                        if (cellArray[i, col].isCellOccupied() == false)
+                        {
+                            rowCordinates.Add(i);
+                            colCordinates.Add(j);
+                            scorePoints.Add(score);
+                        }
                     }
                 }
             }
-            beta = score;
-            meanScore = (alpha + beta) - 1;
-            Console.WriteLine("mean Score=" + meanScore);
-            scorePoints[7] = score;
-            return scorePoints;
+            int Maxscore = scorePoints.Max();
+            int[] coords = { 0, 0, 0 };
+            for (int i = 0; i < (scorePoints.Count - 1); i++)
+            {
+                if (Maxscore == scorePoints[i])
+                {
+                    coords[0] = Maxscore;
+                    coords[1] = rowCordinates[i];
+                    coords[2] = colCordinates[i];
+                    break;
+                }
+            }
+            return coords;
         }
     }
 }
