@@ -6,6 +6,9 @@ namespace Game
         static int choice = 0;
         static Gomoku gomoku = null;
         static bool gamemode; //true = human // false = computer  
+
+        static Player player1;
+        static Player player2;
         static void Main(string[] args)
         {
             Console.ResetColor();
@@ -20,7 +23,7 @@ namespace Game
                 {
                     choice = Convert.ToInt16(Console.ReadLine());
                 }
-                catch (Exception e)
+                catch
                 {
                     choice = 0;
                 }
@@ -59,60 +62,96 @@ namespace Game
         {
             Console.Clear();
             bool controlFlag = true; // flag to control loop
-            printInfo("--------Welcome to Gomoku--------");
-            printInfo("Please select your game mode \nPress 1 to play with human player press 2 to play with Computer");
+            gomoku = new Gomoku(10, 10, null, null); // rows,cols
+            bool savedData = gomoku.loadData();
+            bool newGame = true;
 
-            while (controlFlag)
+            Console.WriteLine(" SAVED DATA " + savedData);
+            if (savedData)
             {
+
+                Console.WriteLine("Old game data found do you want to restore it ?. press Y to restore, anything else for new game");
+                char restore;
                 try
                 {
-                    int userchoice = Convert.ToInt16(Console.ReadLine());
-                    if (userchoice == 1)
+                    restore = Convert.ToChar(Console.ReadLine());
+                }
+                catch
+                {
+                    restore = 'N';
+                }
+                if (restore == 'Y' || restore == 'y')
+                {
+                    Player p1 = gomoku.player1;
+                    Player p2 = gomoku.player2;
+                    player1 = p1;
+                    player2 = p2;
+                    newGame = false;
+                }
+                else
+                {
+                    gomoku.deleteFiles();
+                    newGame = true;
+                }
+            }
+
+            if (newGame)
+            {
+                printInfo("--------Welcome to Gomoku--------");
+                printInfo("Please select your game mode \nPress 1 to play with human player press 2 to play with Computer");
+                while (controlFlag)
+                {
+                    try
                     {
-                        gamemode = true;
-                        controlFlag = false;
+                        int userchoice = Convert.ToInt16(Console.ReadLine());
+                        if (userchoice == 1)
+                        {
+                            gamemode = true;
+                            controlFlag = false;
+                        }
+                        else if (userchoice == 2)
+                        {
+                            gamemode = false;
+                            controlFlag = false;
+                        }
+                        else
+                        {
+                            printError("Invalid selection");
+                            controlFlag = true;
+                        }
                     }
-                    else if (userchoice == 2)
-                    {
-                        gamemode = false;
-                        controlFlag = false;
-                    }
-                    else
+                    catch
                     {
                         printError("Invalid selection");
                         controlFlag = true;
                     }
+
                 }
-                catch (Exception e)
+
+
+                if (gamemode == true)
                 {
-                    printError("Invalid selection");
-                    controlFlag = true;
+                    player1 = capturePlayer(1);
+                    player2 = capturePlayer(2);
+                }
+                else
+                {
+                    player1 = capturePlayer(1);
+                    player2 = new Player("Computer", 'C', 0);
                 }
 
-            }
-
-            Player player1;
-            Player player2;
-            if (gamemode == true)
-            {
-                player1 = capturePlayer(1);
-                player2 = capturePlayer(2);
-            }
-            else
-            {
-                player1 = capturePlayer(1);
-                player2 = new Player("Computer", 'C', 0);
+                gomoku = new Gomoku(10, 10, player1, player2); // rows,cols
             }
 
 
-            gomoku = new Gomoku(10, 10, player1, player2); // rows,cols
-            //gomoku.loadData();
+
+
+
+
             Console.Clear();
             printInfo("GAME STARTS NOW");
             printInfo("Initial state of board");
-            gomoku.loadData();
-            //gomoku.drawGomokuBoard();
-            //============================Two player game module
+
             bool controlFlag1 = true;
             bool controlFlag2 = true;
             while (controlFlag1 && controlFlag2)
@@ -149,6 +188,7 @@ namespace Game
 
         public static bool PlayerMove(Player player)
         {
+            Console.WriteLine("MOVE METHOD CALLED");
             bool controlFlag = true;
             String result = "";
             while (controlFlag)
@@ -174,25 +214,27 @@ namespace Game
                                 print(player.getName() + "'s move");
                                 print("select column, as example A");
                                 char playerColumn = Convert.ToChar(Console.ReadLine());
+
+
                                 print("select row, as example 1");
                                 int playerRow = Convert.ToInt16(Console.ReadLine()) - 1; // -1 adjustment made for identifying current index
                                 int index = Convert.ToInt32(playerColumn) - 65;
                                 result = gomoku.makeMove(playerRow, index, player);
                                 break;
                             case 2:
+                                gomoku.deleteFiles();
                                 gomoku.saveData();
-                                result = "NA";
                                 printInfo("GAME DATA SAVED");
+                                Environment.Exit(0);
                                 break;
                             default:
-                                result = "invalid move";
-                                printError("Invalid choice");
+                                result = "Invalid choice";
                                 break;
                         }
 
 
                     }
-                    catch (Exception e)
+                    catch
                     {
                         printError("Invalid move");
                         goto gotoLabel;
@@ -249,9 +291,6 @@ namespace Game
                     printInfo("Press Y for confirm, anything else if you want to change name and character for player " + i);
 
                     char choice = Convert.ToChar(Console.ReadLine());
-
-
-
                     if (choice == 'Y' || choice == 'y')
                     {
                         controlFlag = false;
@@ -259,7 +298,7 @@ namespace Game
                         return player;
                     }
                 }
-                catch (Exception e)
+                catch
                 {
                     printError("Invalid name or character please enter valid details");
                     controlFlag = true;

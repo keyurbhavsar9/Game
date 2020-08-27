@@ -13,7 +13,7 @@ namespace Game
     {
         public Cell[,] cellArray;
         List<Cell> cellHistory = new List<Cell>();
-        private Player player1, player2;
+        public Player player1, player2;
         private int rows, cols;
         private int score = -1;
         private const int winningScore = 5; // change to modify winning score
@@ -297,13 +297,14 @@ namespace Game
 
             foreach (var cell in cellHistory)
             {
-                if (cell.getPlayer() == player1)
+                if (cell.getPlayer().getName() == player1.getName())
                 {
                     humanMoves.Add(cell);
                 }
             }
 
-            //Console.WriteLine("Total computer moves=" + compMoves.Count);
+            Console.WriteLine("Total computer moves=" + compMoves.Count);
+            Console.WriteLine("Total Human moves=" + humanMoves.Count);
 
             if (compMoves.Count > 0)
             {
@@ -319,9 +320,6 @@ namespace Game
                 {
                     secondLastCell = compMoves[compMoves.Count - 1];
                 }
-
-                //Console.WriteLine("Last row=" + lastMoveRow);
-                //Console.WriteLine("Last col=" + lastMoveCol);
                 lastMoveRow = lastCell.getRow();
                 lastMoveCol = lastCell.getCol();
 
@@ -330,9 +328,8 @@ namespace Game
                     int[] predictNextHumanMove = bestCoordinates(lastHumanCell.getRow(), lastHumanCell.getCol(), player1);
                     int[] predictedMovePriority1 = bestCoordinates(lastMoveRow, lastMoveCol, player2);
                     int[] predictedMovePriority2 = bestCoordinates(secondLastCell.getRow(), secondLastCell.getCol(), player2);
-                    //Console.WriteLine("HUMAN SCORE" + predictNextHumanMove[0]);
-                    //Console.WriteLine("COMPUTER SCORE" + predictedMove[0]);
-                    if (predictNextHumanMove[0] > predictedMovePriority1[0])
+
+                    if (predictNextHumanMove[0] >= predictedMovePriority1[0])
                     {
                         result = makeMove(predictNextHumanMove[1], predictNextHumanMove[2], player2);
                     }
@@ -353,14 +350,6 @@ namespace Game
                     result = makeMove(predictedMove[1], predictedMove[2], player2);
                     //Console.WriteLine("NEXT PREDICTED MOVE WILL BE" + predictedMove[1] + "," + predictedMove[2]);
                 }
-
-
-
-                //int bestCordHuman = bestCoordinates(lastMoveRow, lastMoveCol, player1); // filter human moves from array and find last humn move
-                //Console.WriteLine("MAX SEQENCE FOR Human" + bestCordHuman);
-
-                //get here the last loopbreak for i and j and pass it to method
-
             }
             else
             {
@@ -588,32 +577,81 @@ namespace Game
 
         public void saveData()
         {
-            IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(@".\data\sample.txt", FileMode.Create, FileAccess.Write);
-            formatter.Serialize(stream, cellArray);
-            stream.Close();
-
-        }
-
-        public void loadData()
-        {
-            IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(@".\data\sample.txt", FileMode.Open, FileAccess.Read);
             try
             {
-                Cell[,] cells = (Cell[,])formatter.Deserialize(stream);
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream(@".\data\cellArray", FileMode.Create, FileAccess.Write);
+                formatter.Serialize(stream, this.cellArray);
                 stream.Close();
-                this.cellArray = cells;
+
+                stream = new FileStream(@".\data\cellHistory", FileMode.Create, FileAccess.Write);
+                formatter.Serialize(stream, this.cellHistory);
+                stream.Close();
+
+                stream = new FileStream(@".\data\player1", FileMode.Create, FileAccess.Write);
+                formatter.Serialize(stream, this.player1);
+                stream.Close();
+
+                stream = new FileStream(@".\data\player2", FileMode.Create, FileAccess.Write);
+                formatter.Serialize(stream, this.player2);
+                stream.Close();
             }
             catch (Exception e)
             {
-                Console.WriteLine("Can not retrive data" + e);
+                Console.WriteLine("ERROR" + e);
             }
 
 
-            //Tutorial objnew = (Tutorial)formatter.Deserialize(stream);
-            //Console.WriteLine(objnew.ID);
-            //Console.WriteLine(objnew.Name);
+        }
+
+        public bool loadData()
+        {
+
+            IFormatter formatter = new BinaryFormatter();
+
+            try
+            {
+                Stream stream = new FileStream(@"./data/cellArray", FileMode.Open, FileAccess.Read);
+                this.cellArray = (Cell[,])formatter.Deserialize(stream);
+                stream.Close();
+
+                stream = new FileStream(@".\data\cellHistory", FileMode.Open, FileAccess.Read);
+                this.cellHistory = (List<Cell>)formatter.Deserialize(stream);
+                stream.Close();
+
+                stream = new FileStream(@".\data\player1", FileMode.Open, FileAccess.Read);
+                this.player1 = (Player)formatter.Deserialize(stream);
+                stream.Close();
+
+                stream = new FileStream(@".\data\player2", FileMode.Open, FileAccess.Read);
+                this.player2 = (Player)formatter.Deserialize(stream);
+                stream.Close();
+
+
+                return true;
+
+            }
+            catch (FileNotFoundException e)
+            {
+                //Console.WriteLine("Can not retrive data" + e);
+                return false;
+            }
+
+
+            Console.WriteLine("-----------Loaded data--------------");
+            Console.WriteLine("cellHistory.size=" + cellHistory.Count);
+            Console.WriteLine("Player1" + player1.getName());
+            Console.WriteLine("Player2" + player2.getName());
+        }
+
+        public void deleteFiles()
+        {
+            string[] files = Directory.GetFiles(@".\Data\");
+            foreach (string file in files)
+            {
+                File.Delete(file);
+                Console.WriteLine($"{file} is deleted.");
+            }
         }
 
     }
