@@ -580,19 +580,19 @@ namespace Game
             try
             {
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(@".\data\cellArray", FileMode.Create, FileAccess.Write);
+                Stream stream = new FileStream(@"./data/cellArray", FileMode.Create, FileAccess.Write);
                 formatter.Serialize(stream, this.cellArray);
                 stream.Close();
 
-                stream = new FileStream(@".\data\cellHistory", FileMode.Create, FileAccess.Write);
+                stream = new FileStream(@"./data/cellHistory", FileMode.Create, FileAccess.Write);
                 formatter.Serialize(stream, this.cellHistory);
                 stream.Close();
 
-                stream = new FileStream(@".\data\player1", FileMode.Create, FileAccess.Write);
+                stream = new FileStream(@"./data/player1", FileMode.Create, FileAccess.Write);
                 formatter.Serialize(stream, this.player1);
                 stream.Close();
 
-                stream = new FileStream(@".\data\player2", FileMode.Create, FileAccess.Write);
+                stream = new FileStream(@"./data/player2", FileMode.Create, FileAccess.Write);
                 formatter.Serialize(stream, this.player2);
                 stream.Close();
             }
@@ -615,15 +615,15 @@ namespace Game
                 this.cellArray = (Cell[,])formatter.Deserialize(stream);
                 stream.Close();
 
-                stream = new FileStream(@".\data\cellHistory", FileMode.Open, FileAccess.Read);
+                stream = new FileStream(@"./data/cellHistory", FileMode.Open, FileAccess.Read);
                 this.cellHistory = (List<Cell>)formatter.Deserialize(stream);
                 stream.Close();
 
-                stream = new FileStream(@".\data\player1", FileMode.Open, FileAccess.Read);
+                stream = new FileStream(@"./data/player1", FileMode.Open, FileAccess.Read);
                 this.player1 = (Player)formatter.Deserialize(stream);
                 stream.Close();
 
-                stream = new FileStream(@".\data\player2", FileMode.Open, FileAccess.Read);
+                stream = new FileStream(@"./data/player2", FileMode.Open, FileAccess.Read);
                 this.player2 = (Player)formatter.Deserialize(stream);
                 stream.Close();
 
@@ -646,7 +646,7 @@ namespace Game
 
         public void deleteFiles()
         {
-            string[] files = Directory.GetFiles(@".\Data\");
+            string[] files = Directory.GetFiles(@"./Data/");
             foreach (string file in files)
             {
                 File.Delete(file);
